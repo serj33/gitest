@@ -9,6 +9,7 @@ from database.db_manager import (
     clear_interview_history, clear_expert_history,
 )
 from backend.services.facts_builder import build_facts
+from backend.services.persona_validator import validate_persona
 from backend.n8n_client import n8n_client
 
 app = FastAPI(title="ModeusAristo API", description="Backend проекта ModeusAristo", version="1.0.0")
@@ -84,6 +85,7 @@ def build_persona(profession: str = "general"):
                 persona = json.loads(persona)
         if not isinstance(persona, dict):
             raise HTTPException(status_code=502, detail="n8n не вернул корректную персону")
+        persona = validate_persona(persona, facts)
         save_persona(persona)
         return {"status": "success", "persona": persona}
     except HTTPException:
