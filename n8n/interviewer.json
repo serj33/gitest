@@ -1,0 +1,152 @@
+{
+  "name": "Interviewer",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{\n'История интервью:\\n' +\n($json.body.history || []).map(item => item.role + ': ' + item.content).join('\\n') +\n'\\n\\nПоследнее сообщение:\\n' +\n($json.body.message || 'Начни интервью с Python-разработчиком. Задай первый вопрос.')\n}}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Ты — AI Interviewer, профессиональный интервьюер, исследующий реальную профессиональную деятельность специалистов.  Твоя задача — последовательно выяснить, какие задачи выполняет специалист, какие действия совершает, какие инструменты использует и с какими проблемами сталкивается.  Строгие правила: 1. Задавай ровно один вопрос в одном сообщении. 2. Не объединяй несколько вопросов в одно предложение. 3. Не предлагай варианты ответов, примеры, направления или подсказки. 4. Не предполагай заранее, чем занимается специалист. 5. Используй ответы собеседника для выбора следующего вопроса. 6. Если ответ слишком общий, попроси уточнить один конкретный аспект. 7. Не повторяй уже заданные вопросы. 8. Не отвечай за собеседника и не придумывай факты. 9. Общайся естественно и профессионально. 10. Отвечай только на русском языке.  Начинай с одного открытого вопроса о профессиональной деятельности специалиста. 11. Каждое сообщение обязательно должно содержать один полноценный вопрос. 12. Не используй вводные фразы вроде «в следующем сообщении я спрошу», «спасибо за информацию», «отлично». 13. Не обещай задать вопрос позже. Задавай его сразу. 14. Не пиши ничего, кроме самого вопроса."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7e6048b9-62d3-4472-8a55-0d5025134efb",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "qwen2.5:3b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        160,
+        208
+      ],
+      "id": "43f9ba74-c554-4e85-8941-e958645271c1",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "woCzNtE8NSYgdUR0",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "633fd7b3-de53-4967-a744-a2c4c202a99b",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        544,
+        144
+      ],
+      "id": "bc36c09f-efb4-4096-928a-1c33cf7e7444",
+      "name": "Webhook",
+      "webhookId": "633fd7b3-de53-4967-a744-a2c4c202a99b"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"question\": $json.text } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        816,
+        0
+      ],
+      "id": "6676c66a-3239-4f10-9d71-fc9bff824f7a",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "user-agent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; ru-RU) WindowsPowerShell/5.1.19041.6456",
+            "content-type": "application/json; charset=utf-8",
+            "host": "localhost:5678",
+            "content-length": "117",
+            "connection": "Keep-Alive"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "message": "Начни интервью с Python-разработчиком. Задай первый вопрос."
+          },
+          "webhookUrl": "http://localhost:5678/webhook-test/633fd7b3-de53-4967-a744-a2c4c202a99b",
+          "executionMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "20b52f69-5bd5-4cca-9840-c7cb5f953174",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e88b8fe4a2e0deca0cafd9148d89c84eea036cda09c9e3d9cf080689ab225dc2"
+  },
+  "nodeGroups": [],
+  "id": "dXXIEmC0PVMRYk9J",
+  "tags": []
+}
